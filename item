@@ -1,0 +1,37 @@
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+
+# Example data
+items = [
+    {"id": 1, "name": "Plastic Bottle", "quantity": 100, "packaging_type": "Plastic"},
+    {"id": 2, "name": "Plastic Jar", "quantity": 50, "packaging_type": "Plastic"},
+]
+
+@app.route('/items', methods=['GET'])
+def get_items():
+    # Get only items of type 'Plastic'
+    plastic_items = [item for item in items if 'Plastic' in item['packaging_type']]
+    return jsonify(plastic_items)
+
+@app.route('/items', methods=['POST'])
+def add_item():
+    data = request.json
+    if not data:
+        return jsonify({"error": "Invalid input"}), 400
+    
+    # Ensure the item is plastic
+    if 'Plastic' not in data.get('packaging_type', ''):
+        return jsonify({"error": "Only plastic items are allowed"}), 400
+
+    new_item = {
+        "id": len(items) + 1,
+        "name": data['name'],
+        "quantity": data['quantity'],
+        "packaging_type": data['packaging_type']
+    }
+    items.append(new_item)
+    return jsonify(new_item), 201
+
+if __name__ == '__main__':
+    app.run(debug=True)
